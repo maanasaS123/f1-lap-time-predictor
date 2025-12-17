@@ -16,9 +16,7 @@ def load_raw_data():
     
 def clean_data(df):
     df = df.dropna(subset=[
-        'driver_number', 'session_key', 'lap_number', 'lap_duration',
-        'duration_sector_1', 'duration_sector_2', 'duration_sector_3'
-    ])
+        'driver_number', 'session_key', 'lap_number', 'lap_duration'])
 
     # Optional: remove duplicates
     df = df.drop_duplicates()
@@ -45,11 +43,9 @@ def encode_features(df):
     return df
 
 def normalize_features(df):
-    cols_to_scale = ['lap_number', 'duration_sector_1', 'duration_sector_2', 'duration_sector_3']
-
+    
     scaler = MinMaxScaler()
-    df[cols_to_scale] = scaler.fit_transform(df[cols_to_scale])
-
+    df[['lap_number']] = scaler.fit_transform(df[['lap_number']])
     joblib.dump(scaler, os.path.join(PROCESSED_PATH, 'scaler.pkl'))
     return df
 
@@ -59,9 +55,6 @@ def split_and_save(df):
         'driver_number_enc',
         'session_key_enc',
         'lap_number',
-        'duration_sector_1',
-        'duration_sector_2',
-        'duration_sector_3'
     ]]
     y = df['lap_duration']
 
