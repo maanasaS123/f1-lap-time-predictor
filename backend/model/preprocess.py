@@ -13,10 +13,9 @@ PROCESSED_PATH = "backend/data/"
 def load_raw_data():
     df = pd.read_csv(RAW_PATH)
     return df
-    
+
 def clean_data(df):
-    df = df.dropna(subset=[
-        'driver_number', 'session_key', 'lap_number', 'lap_duration'])
+    df = df.dropna(subset=['driver_number', 'session_key', 'lap_number', 'lap_duration'])
 
     # Optional: remove duplicates
     df = df.drop_duplicates()
@@ -49,7 +48,6 @@ def normalize_features(df):
     joblib.dump(scaler, os.path.join(PROCESSED_PATH, 'scaler.pkl'))
     return df
 
-
 def split_and_save(df):
     X = df[[
         'driver_number_enc',
@@ -75,4 +73,3 @@ if __name__ == "__main__":
     df = normalize_features(df)
     split_and_save(df)
     print("Data preprocessing complete! Processed files saved in:", PROCESSED_PATH)
-
