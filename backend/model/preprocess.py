@@ -12,11 +12,37 @@ PROCESSED_PATH = "backend/data/"
 
 def load_raw_data():
     df = pd.read_csv(RAW_PATH)
+
+    stints = pd.read_csv("backend/data/stints.csv")
+
+    # merge stints onto laps using session_key + driver_number
+    df = df.merge(
+        stints,
+        on=["session_key", "driver_number"],
+        how="left"
+    )
+
+    # keep only the stint row that matches the lap_number
+    df = df[
+        (df["lap_number"] >= df["lap_start"]) &
+        (df["lap_number"] <= df["lap_end"])
+    ].copy()
+
+    # tyre age for each lap
+    df["tyre_age"] = df["tyre_age_at_start"] + (df["lap_number"] - df["lap_start"])
+
+    # encode compound
+    compound_map = {"SOFT": 0, "MEDIUM": 1, "HARD": 2}
+    df["compound_code"] = df["compound"].map(compound_map)
+
     return df
     
 def clean_data(df):
     df = df.dropna(subset=[
-        'driver_number', 'session_key', 'lap_number', 'lap_duration'])
+    'driver_number', 'session_key', 'lap_number', 'lap_duration',
+    'stint_number', 'tyre_age', 'compound_code', 'st_speed'
+])
+
 
     # Optional: remove duplicates
     df = df.drop_duplicates()
@@ -25,6 +51,9 @@ def clean_data(df):
 
     if "is_pit_out_lap" in df.columns:
         df = df[df["is_pit_out_lap"] == False]
+    # remove absurdly slow laps (pit in / safety car)
+    df = df[df["lap_duration"] < df["lap_duration"].quantile(0.96)]
+
 
     return df
 
@@ -43,10 +72,8 @@ def encode_features(df):
     return df
 
 def normalize_features(df):
-    
-    scaler = MinMaxScaler()
-    df[['lap_number']] = scaler.fit_transform(df[['lap_number']])
-    joblib.dump(scaler, os.path.join(PROCESSED_PATH, 'scaler.pkl'))
+
+
     return df
 
 
@@ -55,7 +82,13 @@ def split_and_save(df):
         'driver_number_enc',
         'session_key_enc',
         'lap_number',
+        'st_speed',
+        'stint_number',
+        'tyre_age',
+        'compound_code'
     ]]
+
+
     y = df['lap_duration']
 
 
