@@ -10,5 +10,7 @@ The project includes a trained ML model, a prediction pipeline, and an interacti
 - Interactive Streamlit UI
 - Used OpenF1 API for data collection
 
+Below are some photos of our project page: 
+
 ![UI Screenshot](./images/image.png)
 ![UI Screenshot](./images/image%20(1).png)
